@@ -55,6 +55,7 @@ pub fn reboot(reset_type: ResetType, reason: ResetReason) void {
     _ = sbi_call(EXT_SRST, EXT_SRST_RESET, @intFromEnum(reset_type), @intFromEnum(reason), 0, 0, 0, 0);
 }
 
-pub fn shutdown() void {
+pub fn shutdown() noreturn {
     _ = sbi_call(EXT_SRST, EXT_SRST_RESET, @intFromEnum(ResetType.SHUTDOWN), 0, 0, 0, 0, 0);
+    while (true) {} // Shut up the Zig compiler
 }

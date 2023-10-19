@@ -51,6 +51,7 @@ pub fn build(b: *std.Build) void {
     b.default_step.dependOn(&exe.step);
 
     var qemu_params = ArrayList([]const u8).init(b.allocator);
+    // Trying to mimic the milkv duo
     qemu_params.appendSlice(&[_][]const u8{
         "qemu-system-riscv64",
         "-machine",
@@ -59,9 +60,9 @@ pub fn build(b: *std.Build) void {
         "-bios",
         "default",
         "-smp",
-        "4",
+        "2",
         "-m",
-        "128M",
+        "64M",
         "-kernel",
         "zig-out/bin/rtos_project",
     }) catch {};
