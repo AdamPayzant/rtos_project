@@ -3,7 +3,15 @@ const locks = @import("locks.zig");
 const Spinlock = locks.Spinlock;
 
 // UART register offsets
+
+/// Receive Holding Register
+///
+/// Receives data
 const RHR = 0b000;
+/// Transmit Holding Register
+///
+/// Transmits data, set to 1 when transmitter is empty or data is transferred
+/// to the transmit shift register
 const THR = 0b000;
 /// Interrupt control fields
 const IER = 0b001;
@@ -101,6 +109,9 @@ const MSRFields = enum(u8) {
     RI, // Equivalent to OP1 in the MCR during local loopback
     CD, // Equivalent to OP2 in the MCR during local loopback
 };
+/// Scratchpad Register
+///
+/// Stores 8 bits of information
 const SPR = 0b111;
 
 pub const UART = struct {
@@ -116,18 +127,55 @@ pub const UART = struct {
         };
     }
 
+    pub fn set_FIFO(self: *Self) void {
+        // Disable interrupts, configure FIFO mode, reenable interrupts
+        self.uart_reg[IER] = 0x0;
+        self.uart_reg[FCR] = 1 << @intFromEnum(FCRFields.FIFO_STATE) |
+            1 << @intFromEnum(FCRFields.RECEIVER_FIFO_RESET) |
+            1 << @intFromEnum(FCRFields.TRASMIT_FIFO_RESET);
+        self.uart_reg[IER] = 1 << @intFromEnum(IERFields.RECEIVE_LINE_STATE);
+    }
+
     pub fn write_byte(self: *Self, byte: u8) void {
         self.lock.lock();
         defer self.lock.unlock();
 
-        // Wait for receive mode
-        while (self.uart_reg[LSR]) {}
-        self.uart_reg[RHR] = byte;
+        // Wait for data to be flushed
+        while (self.uart_reg[LSR] & 1 << @intFromEnum(LSRFields.TRANSIT_HOLDING_EMPTY) == 0) {}
+        self.uart_reg[THR] = byte;
+    }
+
+    pub fn read_byte(self: *Self) ?u8 {
+        self.lock.lock();
+        defer self.lock.unlock();
+
+        if (self.uart_reg[LSR] & 1 << @intFromEnum(LSRFields.RECEIVE_DATA_READY) == 1) {
+            return self.uart_reg[RHR];
+        } else {
+            return null;
+        }
     }
 };
 
 pub fn write_string(uart: *UART, str: []const u8) void {
     for (str) |char| {
         uart.write_byte(char);
+    }
+}
+
+pub fn read_string(uart: *UART, return_array: *[128]u8) usize {
+    var i: usize = 0;
+    while (true) {
+        var b = uart.read_byte() orelse continue;
+        if (b == '\r') {
+            // For quality of life we'll just swap a CR for a newline
+            b = '\n';
+        }
+        uart.write_byte(b);
+
+        return_array.*[i] = b;
+        if (b == '\n') {
+            return i;
+        }
     }
 }
