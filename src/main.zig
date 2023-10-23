@@ -35,9 +35,9 @@ export fn kmain() noreturn {
     var buffer: [128]u8 = undefined;
     while (true) {
         var size = uart.read_string(&serial, &buffer);
-        uart.write_string(&serial, "Received the following message");
+        uart.write_string(&serial, "Received the following message:\n");
         uart.write_string(&serial, buffer[0..size]);
-        if (std.mem.eql(u8, buffer[0..size], "quit")) {
+        if (std.mem.eql(u8, buffer[0 .. size - 1], "quit")) {
             break;
         }
     }

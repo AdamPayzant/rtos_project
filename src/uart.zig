@@ -1,3 +1,8 @@
+/// uart.zig
+///
+/// A basic uart handler. Eventually this will need to be moved out to be
+/// its own process and not baked into the kernel, but that's for when
+/// processes are actually working
 const locks = @import("locks.zig");
 
 const Spinlock = locks.Spinlock;
@@ -163,17 +168,24 @@ pub fn write_string(uart: *UART, str: []const u8) void {
     }
 }
 
-pub fn read_string(uart: *UART, return_array: *[128]u8) usize {
+/// read_string
+///
+/// Reads from the uart until a newline or carriage return is input and writes
+/// to provided return array and returns the size of the list written.
+pub fn read_string(uart: *UART, return_array: []u8) usize {
     var i: usize = 0;
     while (true) {
         var b = uart.read_byte() orelse continue;
         if (b == '\r') {
-            // For quality of life we'll just swap a CR for a newline
+            // For quality of life we'll just swap a CR for a newline.
+            // Eventually we'll probably want to actually keep them, but for
+            // now this simplifies it.
             b = '\n';
         }
         uart.write_byte(b);
 
-        return_array.*[i] = b;
+        return_array[i] = b;
+        i += 1;
         if (b == '\n') {
             return i;
         }
