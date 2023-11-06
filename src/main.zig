@@ -6,12 +6,17 @@ const platform_defs = @import("target_specific/riscv/virt/platform_defs.zig");
 const uart = @import("uart.zig");
 const sbi = @import("target_specific/riscv/sbi.zig");
 const lock = @import("locks.zig");
+const irq = @import("target_specific/riscv/interrupts.zig");
 
 var serial = uart.UART.init(platform_defs.UART_ADDR);
 
 pub fn panic(msg: []const u8, error_return_trace: ?*StackTrace, ret_addr: ?usize) noreturn {
     _ = ret_addr;
     _ = error_return_trace;
+
+    // We want to disable interrupts as we're trying to crash and
+    // shouldn't be interrupted
+    irq.disable_interrupts();
 
     uart.write_string(&serial, "ERROR: System Panic\n\n");
     uart.write_string(&serial, "Panic message: \n");

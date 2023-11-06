@@ -1,6 +1,6 @@
 // SBI functions
 
-const SBI_Call_Ret = struct {
+pub const SBI_Call_Ret = struct {
     err: usize,
     value: usize,
 };
@@ -51,8 +51,8 @@ pub const ResetReason = enum(usize) {
     SYSTEM_FAILURE = 0x00000001,
 };
 
-pub fn reboot(reset_type: ResetType, reason: ResetReason) void {
-    _ = sbi_call(EXT_SRST, EXT_SRST_RESET, @intFromEnum(reset_type), @intFromEnum(reason), 0, 0, 0, 0);
+pub fn reboot(reset_type: ResetType, reason: ResetReason) SBI_Call_Ret {
+    return sbi_call(EXT_SRST, EXT_SRST_RESET, @intFromEnum(reset_type), @intFromEnum(reason), 0, 0, 0, 0);
 }
 
 pub fn shutdown() noreturn {

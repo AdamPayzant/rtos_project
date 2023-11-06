@@ -39,7 +39,7 @@ pub fn build(b: *std.Build) void {
     exe.single_threaded = true;
 
     exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/virt/boot.S" });
-    exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/virt/interrupts.S" });
+    exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/interrupts.S" });
 
     exe.setLinkerScript(LazyPath{ .path = "src/target_specific/riscv/virt/linker.ld" });
 
