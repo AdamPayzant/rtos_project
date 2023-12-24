@@ -1,7 +1,7 @@
 
-.global irq_context_switch
+.global sirq_context_switch
 .align 4
-irq_context_switch:
+sirq_context_switch:
   // Make room on the stack
   addi sp, sp, -256
   // Store all registers
@@ -28,8 +28,12 @@ irq_context_switch:
   sd x30, 29 * 8(sp)
   sd x31, 30 * 8(sp)
 
+  // Load in the args and call the dispatch
+  csrr a0, sepc
+  csrr a1, mcause
+  csrr a2, mstatus
 
-  call interrupt_dispatch
+  call supervisor_interrupt_dispatch
   
   // Restore registers 
   ld x1, 0(sp) // ra
@@ -56,8 +60,9 @@ irq_context_switch:
 
   sret
 
-.global register_interrupt_control
-register_interrupt_control:
+.global register_supervisor_interrupt_control
+register_supervisor_interrupt_control:
   // Register interrupt context switch for S interrupts 
-  csrw stvec, irq_context_switch
+  la t0, sirq_context_switch
+  csrw stvec, t0
   ret

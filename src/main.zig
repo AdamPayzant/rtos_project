@@ -6,7 +6,7 @@ const platform_defs = @import("target_specific/riscv/virt/platform_defs.zig");
 const uart = @import("uart.zig");
 const sbi = @import("target_specific/riscv/sbi.zig");
 const lock = @import("locks.zig");
-const irq = @import("target_specific/riscv/interrupts.zig");
+const irq = @import("/interrupts.zig");
 
 var serial = uart.UART.init(platform_defs.UART_ADDR);
 
@@ -44,6 +44,10 @@ export fn kmain() noreturn {
         uart.write_string(&serial, buffer[0..size]);
         if (std.mem.eql(u8, buffer[0 .. size - 1], "quit")) {
             break;
+        }
+
+        if (std.mem.eql(u8, buffer[0 .. size - 1], "ecall")) {
+            asm volatile ("ecall");
         }
     }
 

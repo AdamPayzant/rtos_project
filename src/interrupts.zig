@@ -22,11 +22,15 @@ pub fn enable_interrupts() void {
     );
 }
 
-pub fn register_irq() void {}
-
 // Interrupt handlers
 
-export fn interrupt_dispatch() void {}
+export fn supervisor_interrupt_dispatch(epc: usize, cause: usize, status: usize) void {
+    _ = status;
+    _ = cause;
+    _ = epc;
+    // Disable interrupts
+    disable_interrupts();
+}
 
 fn unhandled() void {
     @panic("Unhandled interrupt detected");
