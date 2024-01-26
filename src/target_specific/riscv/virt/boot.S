@@ -1,6 +1,9 @@
 .section .text.entry
 .global _start
 
+# TODO: We eventually need to move this over to calling sret,
+#       so that the kernel actually runs in supervisor mode
+
 _start:
   # Move the top of stack to the stack pointer
   la sp, boot_stack_top

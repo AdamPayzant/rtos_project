@@ -3,7 +3,7 @@ const std = @import("std");
 const atomic = std.atomic;
 
 const riscv = @import("target_specific/riscv/tools.zig");
-const irq = @import("target_specific/riscv/interrupts.zig");
+const irq = @import("interrupts.zig");
 
 const LockState = enum(u32) {
     UNLOCKED = 0b00,

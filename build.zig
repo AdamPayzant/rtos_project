@@ -39,7 +39,8 @@ pub fn build(b: *std.Build) void {
     exe.single_threaded = true;
 
     exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/virt/boot.S" });
-    exe.addAssemblyFile(LazyPath{ .path = "ssrc/target_specific/riscv/interrupts.S" });
+    exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/interrupts.S" });
+    exe.addAssemblyFile(LazyPath{ .path = "src/kmem/mem_bindings.S" });
 
     exe.setLinkerScript(LazyPath{ .path = "src/target_specific/riscv/virt/linker.ld" });
 
@@ -74,4 +75,21 @@ pub fn build(b: *std.Build) void {
     qemu.step.dependOn(b.default_step);
     const run_step = b.step("run", "Run in qemu");
     run_step.dependOn(&qemu.step);
+
+    // TODO: Figure out how to use Zig's test infrastucture
+    // // Creates a step for unit testing. This only builds the test executable
+    // // but does not run it.
+    // const unit_tests = b.addTest(.{
+    //     .root_source_file = .{ .path = "src/main.zig" },
+    //     .target = b.standardTargetOptions(.{}),
+    //     .optimize = optimize,
+    // });
+
+    // const run_unit_tests = b.addRunArtifact(unit_tests);
+
+    // // Similar to creating the run step earlier, this exposes a `test` step to
+    // // the `zig build --help` menu, providing a way for the user to request
+    // // running the unit tests.
+    // const test_step = b.step("test", "Run unit tests");
+    // test_step.dependOn(&run_unit_tests.step);
 }
