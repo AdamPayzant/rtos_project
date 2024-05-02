@@ -5,14 +5,34 @@ const page = @import("page.zig");
 
 const Allocator = std.mem.Allocator;
 
-// With the page allocation done, now we can do a more proper allocator
+// Setup/management
 
+const AllocList = struct {
+    flags_size: usize,
+};
+
+var INTIALIZED: bool = false;
+
+var HEAD: *AllocList = null;
+
+pub fn kernel_memory_init() void {
+    INTIALIZED = true;
+}
+
+pub fn get_head() *usize {
+    return 0;
+}
+
+// A nicer, zig compliant allocator
 pub const KAllocator = struct {
     const Self = @This();
 
     logger: *uart.UART,
 
     pub fn init(logger: *uart.UART) KAllocator {
+        if (!INTIALIZED) {
+            @panic("Memory allocation not initialized");
+        }
         return KAllocator{
             .logger = logger,
         };

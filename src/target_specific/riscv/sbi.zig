@@ -1,3 +1,5 @@
+const std = @import("std");
+
 // SBI functions
 
 pub const SBI_Call_Ret = struct {
@@ -16,23 +18,59 @@ fn sbi_call(
     arg4: usize,
     arg5: usize,
 ) SBI_Call_Ret {
+    var err: usize = 0;
+    var val: usize = 0;
+
     asm volatile ("ecall"
-        : [arg0] "+{x10}" (arg0),
-          [arg1] "+{x11}" (arg1),
-        : [arg2] "{x10}" (arg2),
-          [arg3] "{x11}" (arg3),
-          [arg4] "{x12}" (arg4),
-          [arg5] "{x13}" (arg5),
-          [fid] "{x16}" (fid),
+        : [err] "={x10}" (err),
+          [val] "={x11}" (val),
+        : [fid] "{x16}" (fid),
           [eid] "{x17}" (eid),
+          [arg0] "{x10}" (arg0),
+          [arg1] "{x11}" (arg1),
+          [arg2] "{x12}" (arg2),
+          [arg3] "{x13}" (arg3),
+          [arg4] "{x14}" (arg4),
+          [arg5] "{x15}" (arg5),
         : "memory"
     );
 
     return SBI_Call_Ret{
-        .err = arg0,
-        .value = arg1,
+        .err = err,
+        .value = val,
     };
 }
+
+// Debug functions
+const SBI_EXT_0_1_CONSOLE_PUTCHAR: usize = 0x1;
+fn put_char(c: u8) void {
+    const res = sbi_call(SBI_EXT_0_1_CONSOLE_PUTCHAR, 0, c, 0, 0, 0, 0, 0);
+
+    if (res.err != 0) {
+        var code: i64 = @bitCast(res.err);
+        code = std.math.absInt(code) catch @panic("SBI failed to put code AND we failed to absolute value it. Something's horribly wrong!");
+
+        _ = sbi_call(SBI_EXT_0_1_CONSOLE_PUTCHAR, 0, @intCast(code), 0, 0, 0, 0, 0);
+    }
+}
+
+pub const SBIWriter = struct {
+    const Writer = std.io.Writer(*SBIWriter, error{}, write);
+
+    pub fn write(self: *SBIWriter, data: []const u8) error{}!usize {
+        _ = self;
+        var count: usize = 0;
+        for (data) |c| {
+            put_char(c);
+            count += 1;
+        }
+        return count;
+    }
+
+    pub fn writer(self: *SBIWriter) Writer {
+        return .{ .context = self };
+    }
+};
 
 // Power functions
 

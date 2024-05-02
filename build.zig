@@ -1,7 +1,7 @@
 const std = @import("std");
 
 const Target = std.Target;
-const LazyPath = std.build.LazyPath;
+const LazyPath = std.Build.LazyPath;
 const ArrayList = std.ArrayList;
 
 // Although this function looks imperative, note that its job is to
@@ -16,11 +16,11 @@ pub fn build(b: *std.Build) void {
     // means any target is allowed, and the default is native. Other options
     // for restricting supported target set are available.
     //const target = b.standardTargetOptions(.{});
-    const target = std.zig.CrossTarget{
+    const target = b.resolveTargetQuery(.{
         .cpu_arch = Target.Cpu.Arch.riscv64,
         .os_tag = Target.Os.Tag.freestanding,
         .abi = Target.Abi.none,
-    };
+    });
 
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
@@ -35,11 +35,11 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.code_model = .medium;
-    exe.single_threaded = true;
+    // exe.code_model = .medium;
+    // exe.single_threaded = true;
 
     exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/virt/boot.S" });
-    exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/interrupts.S" });
+    // exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/interrupts.S" });
     exe.addAssemblyFile(LazyPath{ .path = "src/kmem/mem_bindings.S" });
 
     exe.setLinkerScript(LazyPath{ .path = "src/target_specific/riscv/virt/linker.ld" });

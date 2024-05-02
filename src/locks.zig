@@ -13,12 +13,12 @@ const LockState = enum(u32) {
 pub const Spinlock = struct {
     const Self = @This();
 
-    locked: atomic.Atomic(u32),
+    locked: atomic.Value(u32),
     holding_hart: ?usize,
 
     pub fn init() Spinlock {
         return Spinlock{
-            .locked = atomic.Atomic(u32).init(0),
+            .locked = atomic.Value(u32).init(0),
             .holding_hart = null,
         };
     }
@@ -30,7 +30,7 @@ pub const Spinlock = struct {
         }
 
         irq.disable_interrupts();
-        self.locked.store(@intFromEnum(LockState.LOCKED), atomic.Ordering.Unordered);
+        self.locked.store(@intFromEnum(LockState.LOCKED), .unordered);
         self.holding_hart = riscv.get_hart_id();
     }
 
@@ -44,7 +44,7 @@ pub const Spinlock = struct {
         }
 
         irq.enable_interrupts();
-        self.locked.store(@intFromEnum(LockState.UNLOCKED), atomic.Ordering.Unordered);
+        self.locked.store(@intFromEnum(LockState.UNLOCKED), .unordered);
         self.holding_hart = null;
     }
 };
