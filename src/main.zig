@@ -36,9 +36,9 @@ pub fn panic(msg: []const u8, error_return_trace: ?*StackTrace, ret_addr: ?usize
     sbi.shutdown();
 }
 
-pub const std_options = struct {
-    pub const log_level = .debug;
-    pub const logFn = logfn;
+pub const std_options: std.Options = .{
+    .log_level = .debug,
+    .logFn = logfn,
 };
 
 pub fn logfn(

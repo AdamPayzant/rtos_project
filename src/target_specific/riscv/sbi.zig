@@ -47,10 +47,10 @@ fn put_char(c: u8) void {
     const res = sbi_call(SBI_EXT_0_1_CONSOLE_PUTCHAR, 0, c, 0, 0, 0, 0, 0);
 
     if (res.err != 0) {
-        var code: i64 = @bitCast(res.err);
-        code = std.math.absInt(code) catch @panic("SBI failed to put code AND we failed to absolute value it. Something's horribly wrong!");
+        const code: i64 = @bitCast(res.err);
+        const abs_code = @abs(code);
 
-        _ = sbi_call(SBI_EXT_0_1_CONSOLE_PUTCHAR, 0, @intCast(code), 0, 0, 0, 0, 0);
+        _ = sbi_call(SBI_EXT_0_1_CONSOLE_PUTCHAR, 0, abs_code, 0, 0, 0, 0, 0);
     }
 }
 

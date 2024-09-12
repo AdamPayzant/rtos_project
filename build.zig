@@ -16,12 +16,11 @@ pub fn build(b: *std.Build) void {
     // means any target is allowed, and the default is native. Other options
     // for restricting supported target set are available.
     //const target = b.standardTargetOptions(.{});
-    const target = b.resolveTargetQuery(.{
+    const target = b.standardTargetOptions(.{ .default_target = .{
         .cpu_arch = Target.Cpu.Arch.riscv64,
         .os_tag = Target.Os.Tag.freestanding,
         .abi = Target.Abi.none,
-    });
-
+    } });
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
     // set a preferred release mode, allowing the user to decide how to optimize.
@@ -31,18 +30,18 @@ pub fn build(b: *std.Build) void {
         .name = "rtos_project",
         // In this case the main source file is merely a path, however, in more
         // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
+        .code_model = .medium,
+        .single_threaded = true,
     });
-    // exe.code_model = .medium;
-    // exe.single_threaded = true;
 
-    exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/virt/boot.S" });
-    // exe.addAssemblyFile(LazyPath{ .path = "src/target_specific/riscv/interrupts.S" });
-    exe.addAssemblyFile(LazyPath{ .path = "src/kmem/mem_bindings.S" });
+    exe.addAssemblyFile(LazyPath{ .src_path = .{ .owner = b, .sub_path = "src/target_specific/riscv/virt/boot.S" } });
+    // exe.addAssemblyFile(LazyPath{ .src_path = .{ .owner = b, .sub_path = "src/target_specific/riscv/interrupts.S" } });
+    exe.addAssemblyFile(LazyPath{ .src_path = .{ .owner = b, .sub_path = "src/kmem/mem_bindings.S" } });
 
-    exe.setLinkerScript(LazyPath{ .path = "src/target_specific/riscv/virt/linker.ld" });
+    exe.setLinkerScript(LazyPath{ .src_path = .{ .owner = b, .sub_path = "src/target_specific/riscv/virt/linker.ld" } });
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

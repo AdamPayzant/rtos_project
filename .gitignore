@@ -1,10 +1,9 @@
 # Zig artifacts
 zig-out/
-zig-cache/
+.zig-cache/
 
 # OS Stuff
 .DS_Store
 
 # IDE files
 .vscode
-
