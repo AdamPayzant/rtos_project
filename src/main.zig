@@ -67,7 +67,7 @@ export fn kmain() noreturn {
     logger.debug("Log test", .{});
     logger.debug("Log test2", .{});
     // TODO: Configure paging
-    page.init_paging();
+    page.initialize_vmem_mapping();
 
     serial.set_FIFO();
 

@@ -74,7 +74,7 @@ SECTIONS
 
 		*(.text .text.*)
 	}
-	
+
 	. = ALIGN(4K);
 	.rodata : {
 		*(.srodata .srodata.*)
@@ -95,7 +95,11 @@ SECTIONS
 
 	_memory_end = ORIGIN(ram) + LENGTH(ram);
 
-	/* 
+    PROVIDE(_stack_start = .);
+    PROVIDE(_stack_end = _stack_start + 0x8000);
+    PROVIDE(_memory_end = ORIGIN(ram) + LENGTH(ram));
+
+	/*
 	Finally, our heap starts right after the kernel stack. This heap will be used mainly
 	to dole out memory for user-space applications. However, in some circumstances, it will
 	be used for kernel memory as well.
